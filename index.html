@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Contact List</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    h1 {
+      text-align: center;
+    }
+    #contacts-list {
+      list-style-type: none;
+      padding: 0;
+    }
+    .contact-item {
+      margin-bottom: 10px;
+    }
+    .contact-item strong {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <h1>Contact List</h1>
+  <ul id="contacts-list"></ul>
+
+  <script>
+    if (navigator.permissions) {
+      navigator.permissions.query({ name: 'contacts' }).then(permissionStatus => {
+        if (permissionStatus.state === 'granted') {
+          accessContacts();
+        } else if (permissionStatus.state === 'prompt') {
+          permissionStatus.onchange = function() {
+            if (permissionStatus.state === 'granted') {
+              accessContacts();
+            } else {
+              console.log('Permission denied to access contacts');
+            }
+          };
+          permissionStatus.prompt();
+        } else {
+          console.log('Permission denied to access contacts');
+        }
+      });
+    } else {
+      console.log('Web Contacts API is not supported in this browser');
+    }
+
+    function accessContacts() {
+      if (navigator.contacts) {
+        navigator.contacts.select(['name', 'email']).then(contacts => {
+          const contactsList = document.getElementById('contacts-list');
+          for (let contact of contacts) {
+            const listItem = document.createElement('li');
+            listItem.classList.add('contact-item');
+            listItem.innerHTML = `<strong>Name:</strong> ${contact.name}<br><strong>Email:</strong> ${contact.email}`;
+            contactsList.appendChild(listItem);
+          }
+        }).catch(error => {
+          console.error('Error retrieving contacts:', error);
+        });
+      } else {
+        console.log('Web Contacts API is not supported in this browser');
+      }
+    }
+  </script>
+</body>
+</html>
